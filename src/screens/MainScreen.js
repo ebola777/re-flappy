@@ -58,10 +58,10 @@
                     this.bird.state.set("CRUSING");
                     break;
                 case "GETREADY":
-                    if (this.state.count > 30 && this.bird.handleKeys()) {
+                    //if (this.state.count > 30 && this.bird.handleKeys()) {
                         this.bird.state.set("RUNNING");
                         this.state.set("RUNNING");
-                    }
+                    //}
                     this.moveLand();
                     break;
                 case "RUNNING":
@@ -138,7 +138,8 @@
             }
             if (hasCollision) {
                 console.log('die');
-                this.bird.die();
+                //this.bird.die();
+                window.game.setScreen(new MainScreen(), {type:"inout", time: 50});
             }
             if (Q(dx, dy, hasCollision)) {
                 this.bird.ac = -7;
