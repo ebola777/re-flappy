@@ -37,7 +37,7 @@
       this.bird.setColor(Ω.utils.rand(3));
       // Add the pipes
       this.pipes = [];
-      _.forEach(_.range(3), function (index) {
+      _.forEach(_.range(dummyPipe.pipeSize), function (index) {
         var widthFactor = 1 + (index * distanceFactor);
         var x = offset + (Ω.env.w * widthFactor);
         var upperPipe = new window.Pipe(index, "up", x, Ω.env.h - 170, self.speed);
