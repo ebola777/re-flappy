@@ -22,7 +22,7 @@
             });
 
             Ω.input.bind({
-                "jump": ["space", "mouse1"] ,
+                "jump": ["space", "mouse1"],
                 "touch": "touch",
                 "escape": "escape",
                 "left": "left",
@@ -47,8 +47,7 @@
                         this.best = parseInt(tmp, 10) || 0;
                     }
                 }
-            }
-            catch (e) {
+            } catch (e) {
                 console.log("no localstorage");
                 this.best = 0;
             }
@@ -76,5 +75,20 @@
     });
 
     window.OmegaGame = OmegaGame;
+
+    /**
+     * Detect key states
+     */
+
+    window.keyState = {};
+    window.keyPressed = {};
+
+    $(document).on('keydown', function (e) {
+        window.keyState[e.key] = true;
+    });
+
+    $(document).on('keyup', function (e) {
+        window.keyState[e.key] = false;
+    });
 
 }(Ω));

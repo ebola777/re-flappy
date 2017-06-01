@@ -34,13 +34,13 @@
             this.bird.setColor(Ω.utils.rand(3));
             this.pipes = [
                 new window.Pipe(0, "up", offset + Ω.env.w, Ω.env.h - 170, this.speed),
-                new window.Pipe(0, "down", offset + Ω.env.w, - 100, this.speed),
+                new window.Pipe(0, "down", offset + Ω.env.w, -100, this.speed),
 
                 new window.Pipe(1, "up", offset + (Ω.env.w * 1.6), Ω.env.h - 170, this.speed),
-                new window.Pipe(1, "down", offset + (Ω.env.w * 1.6), - 100, this.speed),
+                new window.Pipe(1, "down", offset + (Ω.env.w * 1.6), -100, this.speed),
 
                 new window.Pipe(2, "up", offset + (Ω.env.w * 2.2), Ω.env.h - 170, this.speed),
-                new window.Pipe(2, "down", offset + (Ω.env.w * 2.2), - 100, this.speed)
+                new window.Pipe(2, "down", offset + (Ω.env.w * 2.2), -100, this.speed)
             ];
 
             this.setHeight(0);
@@ -49,50 +49,61 @@
         },
 
         tick: function () {
-            for (var i = 0; i < 10; i++) {
-                this.state.tick();
+            // If the key enter is not pressed, speed the game
+            if (!window.keyState['Enter']) {
+                for (var i = 0; i < 10; ++i) {
+                    this.tickSingle();
+                }
+            } else {
+                this.tickSingle();
+            }
+        },
 
-                this.bird.tick();
-                switch (this.state.get()) {
-                    case "BORN":
-                        this.state.set("GETREADY");
-                        this.bird.state.set("CRUSING");
-                        break;
-                    case "GETREADY":
-                        //if (this.state.count > 30 && this.bird.handleKeys()) {
-                        this.bird.state.set("RUNNING");
-                        this.state.set("RUNNING");
-                        //}
-                        this.moveLand();
-                        break;
-                    case "RUNNING":
-                        this.tick_RUNNING();
-                        break;
-                    case "DYING":
-                        if (this.state.first()) {
-                            this.shake = new Ω.Shake(30);
-                            this.flash = new Ω.Flash(6);
-                        }
-                        if (this.state.count > 20) {
-                            this.state.set("GAMEOVER");
-                        }
-                        break;
-                    case "GAMEOVER":
-                        if (this.state.first()) {
-                            this.newBest = game.gotScore(this.score);
-                        }
-                        if (this.state.count > 100 && Ω.input.pressed("jump")) {
-                            window.game.setScreen(new MainScreen(), {type: "inout", time: 50});
-                        }
-                        break;
-                }
+        tickSingle: function () {
+            this.state.tick();
+            this.bird.tick();
+            switch (this.state.get()) {
+                case "BORN":
+                    this.state.set("GETREADY");
+                    this.bird.state.set("CRUSING");
+                    break;
+                case "GETREADY":
+                    //if (this.state.count > 30 && this.bird.handleKeys()) {
+                    this.bird.state.set("RUNNING");
+                    this.state.set("RUNNING");
+                    //}
+                    this.moveLand();
+                    break;
+                case "RUNNING":
+                    this.tick_RUNNING();
+                    break;
+                case "DYING":
+                    if (this.state.first()) {
+                        this.shake = new Ω.Shake(30);
+                        this.flash = new Ω.Flash(6);
+                    }
+                    if (this.state.count > 20) {
+                        this.state.set("GAMEOVER");
+                    }
+                    break;
+                case "GAMEOVER":
+                    if (this.state.first()) {
+                        this.newBest = game.gotScore(this.score);
+                    }
+                    if (this.state.count > 100 && Ω.input.pressed("jump")) {
+                        window.game.setScreen(new MainScreen(), {
+                            type: "inout",
+                            time: 50
+                        });
+                    }
+                    break;
+            }
 
-                if (this.shake && !this.shake.tick()) {
-                    this.shake = null;
-                }
-                if (this.flash && !this.flash.tick()) {
-                    this.flash = null;
-                }
+            if (this.shake && !this.shake.tick()) {
+                this.shake = null;
+            }
+            if (this.flash && !this.flash.tick()) {
+                this.flash = null;
             }
         },
 
@@ -100,7 +111,8 @@
 
             this.moveLand();
 
-            var dx = 10000, dy = 10000;
+            var dx = 10000,
+                dy = 10000;
 
             var hasCollision = false;
             for (var i = 0; i < this.pipes.length; i++) {
@@ -133,33 +145,36 @@
                     hasCollision = true;
                 }
             }
-            console.log('(' + dx + ', ' + dy + ')');
+            // console.log('(' + dx + ', ' + dy + ')');
             if (this.bird.y > Ω.env.h - 112 - this.bird.h) {
                 hasCollision = true;
             }
             if (hasCollision) {
                 console.log('die');
                 //this.bird.die();
-                window.game.setScreen(new MainScreen(), {type:"inout", time: 50});
+                window.game.setScreen(new MainScreen(), {
+                    type: "inout",
+                    time: 50
+                });
             }
             if (Q(dx, dy, hasCollision, this.score)) {
                 this.bird.ac = -7;
             }
-/*
-            this.pipes = this.pipes.filter(function (p) {
-                p.tick();
-                if (!p.counted && p.x < this.bird.x) {
-                    p.counted = true;
-                    this.score += 0.5;
-                    this.sounds.point.play();
-                }
+            /*
+                        this.pipes = this.pipes.filter(function (p) {
+                            p.tick();
+                            if (!p.counted && p.x < this.bird.x) {
+                                p.counted = true;
+                                this.score += 0.5;
+                                this.sounds.point.play();
+                            }
 
-                if (p.reset) {
-                    this.setHeight(p.group);
-                }
-                return true;
-            }, this);
-*/
+                            if (p.reset) {
+                                this.setHeight(p.group);
+                            }
+                            return true;
+                        }, this);
+            */
             //Ω.Physics.checkCollision(this.bird, this.pipes);
         },
 
