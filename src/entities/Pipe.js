@@ -14,6 +14,8 @@
       this.h = 320;
       this.speed = speed;
       this.dir = dir;
+      this.distanceFactor = 0.6;
+      this.pipeSize = 3;
     },
 
     tick: function () {
@@ -22,7 +24,7 @@
         this.reset = false;
       }
       if (this.x < -this.w) {
-        this.x += (Ω.env.w * 1.7) + this.w;
+        this.x += (Ω.env.w * (this.pipeSize * this.distanceFactor));
         this.reset = true;
         this.counted = false;
       }

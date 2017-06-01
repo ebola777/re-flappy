@@ -26,22 +26,25 @@
     },
 
     reset: function () {
+      var self = this;
       this.score = 0;
+      var dummyPipe = new Pipe(-1, "up", 0, 0, 0);
       var offset = Ω.env.w * 1;
+      var distanceFactor = dummyPipe.distanceFactor;
       this.state = new Ω.utils.State("BORN");
       this.bird = new window.Bird(Ω.env.w * 0.24, Ω.env.h * 0.46, this);
       this.bg = Ω.utils.rand(2);
       this.bird.setColor(Ω.utils.rand(3));
-      this.pipes = [
-        new window.Pipe(0, "up", offset + Ω.env.w, Ω.env.h - 170, this.speed),
-        new window.Pipe(0, "down", offset + Ω.env.w, -100, this.speed),
-
-        new window.Pipe(1, "up", offset + (Ω.env.w * 1.6), Ω.env.h - 170, this.speed),
-        new window.Pipe(1, "down", offset + (Ω.env.w * 1.6), -100, this.speed),
-
-        new window.Pipe(2, "up", offset + (Ω.env.w * 2.2), Ω.env.h - 170, this.speed),
-        new window.Pipe(2, "down", offset + (Ω.env.w * 2.2), -100, this.speed)
-      ];
+      // Add the pipes
+      this.pipes = [];
+      _.forEach(_.range(3), function (index) {
+        var widthFactor = 1 + (index * distanceFactor);
+        var x = offset + (Ω.env.w * widthFactor);
+        var upperPipe = new window.Pipe(index, "up", x, Ω.env.h - 170, self.speed);
+        var lowerPipe = new window.Pipe(index, "down", x, -100, self.speed);
+        self.pipes.push(upperPipe);
+        self.pipes.push(lowerPipe);
+      });
 
       this.setHeight(0);
       this.setHeight(1);
@@ -49,9 +52,10 @@
     },
 
     tick: function () {
+      var speedFast = 10;
       // If the key enter is not pressed, speed the game
       if (!window.keyState['Enter']) {
-        for (var i = 0; i < 10; ++i) {
+        for (var i = 0; i < speedFast; ++i) {
           this.tickSingle();
         }
       } else {
