@@ -49,50 +49,51 @@
         },
 
         tick: function () {
-            this.state.tick();
+            for (var i = 0; i < 10; i++) {
+                this.state.tick();
 
-            this.bird.tick();
-            switch (this.state.get()) {
-                case "BORN":
-                    this.state.set("GETREADY");
-                    this.bird.state.set("CRUSING");
-                    break;
-                case "GETREADY":
-                    //if (this.state.count > 30 && this.bird.handleKeys()) {
+                this.bird.tick();
+                switch (this.state.get()) {
+                    case "BORN":
+                        this.state.set("GETREADY");
+                        this.bird.state.set("CRUSING");
+                        break;
+                    case "GETREADY":
+                        //if (this.state.count > 30 && this.bird.handleKeys()) {
                         this.bird.state.set("RUNNING");
                         this.state.set("RUNNING");
-                    //}
-                    this.moveLand();
-                    break;
-                case "RUNNING":
-                    this.tick_RUNNING();
-                    break;
-                case "DYING":
-                    if (this.state.first()) {
-                        this.shake = new Ω.Shake(30);
-                        this.flash = new Ω.Flash(6);
-                    }
-                    if (this.state.count > 20) {
-                        this.state.set("GAMEOVER");
-                    }
-                    break;
-                case "GAMEOVER":
-                    if (this.state.first()) {
-                        this.newBest = game.gotScore(this.score);
-                    }
-                    if (this.state.count > 100 && Ω.input.pressed("jump")) {
-                        window.game.setScreen(new MainScreen(), {type:"inout", time: 50});
-                    }
-                    break;
-            }
+                        //}
+                        this.moveLand();
+                        break;
+                    case "RUNNING":
+                        this.tick_RUNNING();
+                        break;
+                    case "DYING":
+                        if (this.state.first()) {
+                            this.shake = new Ω.Shake(30);
+                            this.flash = new Ω.Flash(6);
+                        }
+                        if (this.state.count > 20) {
+                            this.state.set("GAMEOVER");
+                        }
+                        break;
+                    case "GAMEOVER":
+                        if (this.state.first()) {
+                            this.newBest = game.gotScore(this.score);
+                        }
+                        if (this.state.count > 100 && Ω.input.pressed("jump")) {
+                            window.game.setScreen(new MainScreen(), {type: "inout", time: 50});
+                        }
+                        break;
+                }
 
-            if (this.shake && !this.shake.tick()) {
-                this.shake = null;
+                if (this.shake && !this.shake.tick()) {
+                    this.shake = null;
+                }
+                if (this.flash && !this.flash.tick()) {
+                    this.flash = null;
+                }
             }
-            if (this.flash && !this.flash.tick()) {
-                this.flash = null;
-            }
-
         },
 
         tick_RUNNING: function () {
@@ -141,7 +142,7 @@
                 //this.bird.die();
                 window.game.setScreen(new MainScreen(), {type:"inout", time: 50});
             }
-            if (Q(dx, dy, hasCollision)) {
+            if (Q(dx, dy, hasCollision, this.score)) {
                 this.bird.ac = -7;
             }
 /*
@@ -170,11 +171,11 @@
         },
 
         setHeight: function (group) {
-            var h = (Math.random() * 160 | 0) + 130;
+            var h = (Math.random() * 160 | 0) + 100;
             this.pipes.filter(function (p) {
                 return p.group === group;
             }).forEach(function (p) {
-                p.y = p.dir == "up" ? h + 65 : h - p.h - 65;
+                p.y = p.dir == "up" ? h + 50 : h - p.h - 50;
             });
         },
 
