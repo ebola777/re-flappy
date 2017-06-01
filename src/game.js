@@ -1,94 +1,94 @@
 (function (Ω) {
 
-    "use strict";
+  "use strict";
 
-    var OmegaGame = Ω.Game.extend({
+  var OmegaGame = Ω.Game.extend({
 
-        canvas: "#board",
+    canvas: "#board",
 
-        fps: false,
-        best: 0,
+    fps: false,
+    best: 0,
 
-        atlas: new Ω.SpriteAtlas("csv", "res/flappyAtlas/atlas"),
+    atlas: new Ω.SpriteAtlas("csv", "res/flappyAtlas/atlas"),
 
-        init: function (w, h) {
+    init: function (w, h) {
 
-            this._super(w, h);
+      this._super(w, h);
 
-            this.loadHi();
+      this.loadHi();
 
-            Ω.evt.progress.push(function (remaining, max) {
-                console.log((((max - remaining) / max) * 100 | 0) + "%");
-            });
+      Ω.evt.progress.push(function (remaining, max) {
+        console.log((((max - remaining) / max) * 100 | 0) + "%");
+      });
 
-            Ω.input.bind({
-                "jump": ["space", "mouse1"],
-                "touch": "touch",
-                "escape": "escape",
-                "left": "left",
-                "right": "right",
-                "up": "up",
-                "down": "down"
-            });
+      Ω.input.bind({
+        "jump": ["space", "mouse1"],
+        "touch": "touch",
+        "escape": "escape",
+        "left": "left",
+        "right": "right",
+        "up": "up",
+        "down": "down"
+      });
 
-        },
+    },
 
-        load: function () {
+    load: function () {
 
-            this.setScreen(new TitleScreen());
+      this.setScreen(new TitleScreen());
 
-        },
+    },
 
-        loadHi: function () {
-            try {
-                if ("localStorage" in window) {
-                    var tmp = localStorage.getItem("flapHi");
-                    if (tmp) {
-                        this.best = parseInt(tmp, 10) || 0;
-                    }
-                }
-            } catch (e) {
-                console.log("no localstorage");
-                this.best = 0;
-            }
-        },
-
-        saveHi: function () {
-            try {
-                if ("localStorage" in window) {
-                    localStorage.setItem("flapHi", this.best);
-                }
-            } catch (e) {
-
-            }
-        },
-
-        gotScore: function (score) {
-            if (score > window.game.best) {
-                window.game.best = score;
-                this.saveHi();
-                return true;
-            }
-            return false;
+    loadHi: function () {
+      try {
+        if ("localStorage" in window) {
+          var tmp = localStorage.getItem("flapHi");
+          if (tmp) {
+            this.best = parseInt(tmp, 10) || 0;
+          }
         }
+      } catch (e) {
+        console.log("no localstorage");
+        this.best = 0;
+      }
+    },
 
-    });
+    saveHi: function () {
+      try {
+        if ("localStorage" in window) {
+          localStorage.setItem("flapHi", this.best);
+        }
+      } catch (e) {
 
-    window.OmegaGame = OmegaGame;
+      }
+    },
 
-    /**
-     * Detect key states
-     */
+    gotScore: function (score) {
+      if (score > window.game.best) {
+        window.game.best = score;
+        this.saveHi();
+        return true;
+      }
+      return false;
+    }
 
-    window.keyState = {};
-    window.keyPressed = {};
+  });
 
-    $(document).on('keydown', function (e) {
-        window.keyState[e.key] = true;
-    });
+  window.OmegaGame = OmegaGame;
 
-    $(document).on('keyup', function (e) {
-        window.keyState[e.key] = false;
-    });
+  /**
+   * Detect key states
+   */
+
+  window.keyState = {};
+  window.keyPressed = {};
+
+  $(document).on('keydown', function (e) {
+    window.keyState[e.key] = true;
+  });
+
+  $(document).on('keyup', function (e) {
+    window.keyState[e.key] = false;
+  });
 
 }(Ω));

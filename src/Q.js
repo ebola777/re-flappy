@@ -1,21 +1,21 @@
-Q = (function() {
+Q = (function () {
 
-    "use strict";
+  "use strict";
 
-    var something;
+  var something;
 
-    return function (dx, dy, hasCollision, score) {
-        // Write the Q learning algorithm here.
-        // Input: dx, dy, if there is a collision
-        // Output: jump or not
+  return function (dx, dy, hasCollision, score) {
+    // Write the Q learning algorithm here.
+    // Input: dx, dy, if there is a collision
+    // Output: jump or not
 
-        if (dy <= 22) {
-            return true;
-        } else {
-            return false;
-        }
+    if (dy <= 22) {
+      return true;
+    } else {
+      return false;
+    }
 
-        return false;
-    };
+    return false;
+  };
 
 }());
