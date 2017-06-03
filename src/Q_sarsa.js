@@ -3,30 +3,35 @@ window.Q = (function () {
 
   /* Constants */
   // Sarsa parameters
-  var nonGreedyProb = 0.9;
+  var nonGreedyProb = 1.0;
   var learningRate = 0.5;
   var discountFactor = 0.99;
-  var nonGreedyDecayFactor = 1e-4;
-  var learningRateDecayFactor = 1e-5;
+  var nonGreedyDecayDuration = 10.0;
   // Feature space
   var discreteDistance = 50.0;
   // State space
   var stateSpace = null;
   // Action space
   var actionSpace = [true, false];
-  // Training variables
-  var lastState = null;
-  var lastAction = null;
-  var lastScore = 0;
-  // Debugging information
-  var episodeIndex = 0;
-  var totalScore = 0.0;
-  var scoreList = [];
-  var scoreListMaxLen = 100;
+  // Evaluation
+  var avgScoreThresh = 100.0;
+  var threshCountLimit = 10;
 
   /* Runtime properties */
   // Q table
   var qTable = {};
+  // Training variables
+  var lastState = null;
+  var lastAction = null;
+  var lastScore = 0;
+  // Episode variables
+  var episodeIndex = 0;
+  // Evaluation
+  var totalScore = 0.0;
+  var scoreList = [];
+  var scoreListMaxLen = 100;
+  var avgScore = 0.0;
+  var threshCount = 0;
 
   /* Functions */
   var _resetEpisode = function () {
@@ -36,8 +41,6 @@ window.Q = (function () {
   }
 
   var _getState = function (dx, dy) {
-    // Limit the distance in Y direction
-    dy = _.min([200, dy]);
     var dxStepSize = _.round(dx / discreteDistance);
     var dyStepSize = _.round(dy / discreteDistance);
     var dxDiscretized = discreteDistance * dxStepSize;
@@ -105,23 +108,48 @@ window.Q = (function () {
     qTable[state][action] += learningRate * tdError;
   };
 
+  var _calcAvgScore = function (score) {
+    if (scoreList.length >= scoreListMaxLen) {
+      totalScore -= scoreList.shift();
+    }
+    scoreList.push(score);
+    totalScore += score;
+    avgScore = 1.0 * totalScore / scoreList.length;
+  };
+
+  var _decay = function () {
+    if (avgScore >= avgScoreThresh) {
+      threshCount += 1;
+      if (threshCount >= threshCountLimit) {
+        if (nonGreedyProb > 0.0) {
+          console.log('The average score has reached ' + avgScoreThresh +
+            ' over ' + threshCount + ' times, ' +
+            'the training session is going to end');
+        }
+        nonGreedyProb = 0.0;
+        learningRate = 0.0;
+      }
+    } else {
+      threshCount = 0;
+      nonGreedyProb = 1 / ((episodeIndex + 1) / nonGreedyDecayDuration);
+    }
+  };
+
   return function (dx, dy, hasCollision, score) {
     // Get the state
     var state = _getState(dx, dy);
     var reward = _getReward(hasCollision, lastScore, score);
-    // Decay the parameters at the end of the episode
+    // When the state is terminal
     if (_isTerminalState(hasCollision)) {
+      // Calculate average score
+      _calcAvgScore(score);
+      // Decay
+      _decay();
+      // Prepare the next episode
       episodeIndex += 1;
-      nonGreedyProb *= (1.0 - nonGreedyDecayFactor);
-      learningRate *= (1.0 - learningRateDecayFactor);
       _resetEpisode();
-      if ((episodeIndex + 1) % 10 === 0) {
-        if (scoreList.length >= scoreListMaxLen) {
-          totalScore -= scoreList.shift();
-        }
-        scoreList.push(score);
-        totalScore += score;
-        var avgScore = 1.0 * totalScore / scoreList.length;
+      // Print the episode info
+      if ((episodeIndex + 1) % 100 === 0) {
         console.log('Episode ' + (episodeIndex + 1) +
           ': Average score: ' + avgScore);
       }
@@ -137,6 +165,7 @@ window.Q = (function () {
       reward: reward,
       nextState: state,
     };
+    // Learn
     _learn(observation);
     // Choose an action
     var action = _chooseAction(state);
