@@ -6,7 +6,7 @@ window.Q = (function () {
   var nonGreedyProb = 1.0;
   var learningRate = 0.5;
   var discountFactor = 0.99;
-  var nonGreedyDecayDuration = 10.0;
+  var nonGreedyDecayDuration = 5.0;
   // Feature space
   var discreteDistance = 50.0;
   // State space
@@ -14,13 +14,13 @@ window.Q = (function () {
   // Action space
   var actionSpace = [true, false];
   // Evaluation
-  var avgScoreThresh = 100.0;
-  var threshCountLimit = 10;
+  var scoreThresh = 300.0;
 
   /* Runtime properties */
   // Q table
   var qTable = {};
   // Training variables
+  var isTraining = true;
   var lastState = null;
   var lastAction = null;
   var lastScore = 0;
@@ -29,9 +29,8 @@ window.Q = (function () {
   // Evaluation
   var totalScore = 0.0;
   var scoreList = [];
-  var scoreListMaxLen = 100;
+  var scoreListMaxLen = 1000;
   var avgScore = 0.0;
-  var threshCount = 0;
 
   /* Functions */
   var _resetEpisode = function () {
@@ -118,21 +117,7 @@ window.Q = (function () {
   };
 
   var _decay = function () {
-    if (avgScore >= avgScoreThresh) {
-      threshCount += 1;
-      if (threshCount >= threshCountLimit) {
-        if (nonGreedyProb > 0.0) {
-          console.log('The average score has reached ' + avgScoreThresh +
-            ' over ' + threshCount + ' times, ' +
-            'the training session is going to end');
-        }
-        nonGreedyProb = 0.0;
-        learningRate = 0.0;
-      }
-    } else {
-      threshCount = 0;
-      nonGreedyProb = 1 / ((episodeIndex + 1) / nonGreedyDecayDuration);
-    }
+    nonGreedyProb = 1 / ((episodeIndex + 1) / nonGreedyDecayDuration);
   };
 
   return function (dx, dy, hasCollision, score) {
@@ -141,6 +126,12 @@ window.Q = (function () {
     var reward = _getReward(hasCollision, lastScore, score);
     // When the state is terminal
     if (_isTerminalState(hasCollision)) {
+      // Restart the training
+      if (!isTraining) {
+        console.log('The terminal state is reached' +
+          ', the training session is going to start');
+        isTraining = true;
+      }
       // Calculate average score
       _calcAvgScore(score);
       // Decay
@@ -158,6 +149,16 @@ window.Q = (function () {
     if (_.isEqual(state, lastState)) {
       return;
     }
+    // If the score has reached the threshould, stop the training
+    if (score >= scoreThresh) {
+      if (isTraining) {
+        console.log('The score has reached ' + scoreThresh +
+          ', the training session is going to end');
+        isTraining = false;
+        nonGreedyProb = 0.0;
+        learningRate = 0.0;
+      }
+    }
     // Because it has only one function, we learn from the last action
     var observation = {
       state: lastState,
@@ -166,7 +167,9 @@ window.Q = (function () {
       nextState: state,
     };
     // Learn
-    _learn(observation);
+    if (isTraining) {
+      _learn(observation);
+    }
     // Choose an action
     var action = _chooseAction(state);
     // Save the current state and action
