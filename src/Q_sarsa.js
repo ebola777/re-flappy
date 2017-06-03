@@ -6,7 +6,7 @@ window.Q = (function () {
   var nonGreedyProb = 1.0;
   var learningRate = 0.5;
   var discountFactor = 0.99;
-  var nonGreedyDecayDuration = 5.0;
+  var nonGreedyDecayDuration = 10.0;
   // Feature space
   var discreteDistance = 50.0;
   // State space
@@ -141,8 +141,8 @@ window.Q = (function () {
       _resetEpisode();
       // Print the episode info
       if ((episodeIndex + 1) % 100 === 0) {
-        console.log('Episode ' + (episodeIndex + 1) +
-          ': Average score: ' + avgScore);
+        console.log('Episode: ' + (episodeIndex + 1) + '. ' +
+          'Average score: ' + avgScore);
       }
     }
     // If the state is equal to the last state, don't learn
@@ -154,6 +154,7 @@ window.Q = (function () {
       if (isTraining) {
         console.log('The score has reached ' + scoreThresh +
           ', the training session is going to end');
+        console.log('The problem is solved in episode ' + (episodeIndex + 1));
         isTraining = false;
         nonGreedyProb = 0.0;
         learningRate = 0.0;
