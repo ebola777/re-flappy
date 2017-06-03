@@ -49,16 +49,20 @@
       this.setHeight(0);
       this.setHeight(1);
       this.setHeight(2);
+
+      this.lastHasCollision = false;
     },
 
     tick: function () {
-      var speedFast = 10;
+      var speedFast = 1000;
       // If the key enter is not pressed, speed the game
       if (!window.keyState['Enter']) {
+        this.isSpeeding = true;
         for (var i = 0; i < speedFast; ++i) {
           this.tickSingle();
         }
       } else {
+        this.isSpeeding = false;
         this.tickSingle();
       }
     },
@@ -128,7 +132,7 @@
           if (b.x + b.w < a.x) {
             b.counted = true;
             this.score += 0.5;
-            this.sounds.point.play();
+            // this.sounds.point.play();
           } else {
             if (b.x + b.w - a.x < dx) {
               dx = b.x + b.w - a.x;
@@ -153,16 +157,27 @@
       if (this.bird.y > Ω.env.h - 112 - this.bird.h) {
         hasCollision = true;
       }
-      if (hasCollision) {
-        console.log('die');
+      if (hasCollision && !this.lastHasCollision) {
         //this.bird.die();
-        window.game.setScreen(new MainScreen(), {
-          type: "inout",
-          time: 50
-        });
+        if (this.isSpeeding) {
+          window.game.setScreen(new MainScreen(), {
+            type: "inout",
+            time: 1
+          });
+        } else {
+          window.game.setScreen(new MainScreen(), {
+            type: "inout",
+            time: 50
+          });
+        }
       }
-      if (Q(dx, dy, hasCollision, this.score)) {
-        this.bird.ac = -7;
+      if (!this.lastHasCollision) {
+        if (Q(dx, dy, hasCollision, this.score)) {
+          this.bird.ac = -7;
+        }
+      }
+      if (hasCollision) {
+        this.lastHasCollision = true;
       }
       /*
                   this.pipes = this.pipes.filter(function (p) {
