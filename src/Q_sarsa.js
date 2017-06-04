@@ -14,7 +14,7 @@ window.Q = (function () {
   // Action space
   var actionSpace = [true, false];
   // Evaluation
-  var scoreThresh = 300.0;
+  var scoreThresh = 1000.0;
 
   /* Runtime properties */
   // Q table
@@ -67,7 +67,7 @@ window.Q = (function () {
       stateQValueSet = qTable[state];
       for (var actionInd = 0; actionInd < actionSpace.length; actionInd += 1) {
         var action = actionSpace[actionInd];
-        stateQValueSet[action] = 0.5 + (1e-6 * _.random(0.0, 1.0, true));
+        stateQValueSet[action] = 1e-3 * _.random(0.0, 1.0, true);
       }
     }
     return stateQValueSet[action];
@@ -120,6 +120,13 @@ window.Q = (function () {
     nonGreedyProb = 1 / ((episodeIndex + 1) / nonGreedyDecayDuration);
   };
 
+  var _printEpisodeInfo = function () {
+    if ((episodeIndex + 1) % 100 === 0) {
+      console.log('Episode: ' + (episodeIndex + 1) + '. ' +
+        'Average score: ' + avgScore);
+    }
+  };
+
   return function (dx, dy, hasCollision, score) {
     // Get the state
     var state = _getState(dx, dy);
@@ -140,10 +147,7 @@ window.Q = (function () {
       episodeIndex += 1;
       _resetEpisode();
       // Print the episode info
-      if ((episodeIndex + 1) % 100 === 0) {
-        console.log('Episode: ' + (episodeIndex + 1) + '. ' +
-          'Average score: ' + avgScore);
-      }
+      _printEpisodeInfo();
     }
     // If the state is equal to the last state, don't learn
     if (_.isEqual(state, lastState)) {
