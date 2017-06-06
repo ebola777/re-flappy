@@ -2,11 +2,14 @@ window.Q = (function () {
   'use strict';
 
   /* Constants */
-  // Sarsa parameters
-  var nonGreedyProb = 1.0;
-  var learningRate = 0.5;
-  var discountFactor = 0.99;
+  // Parameters
+  var initNonGreedyProb = 1.0;
+  var minNonGreedyProb = 1e-4;
+  var initLearningRate = 0.5;
+  var minLearningRate = 0.5;
+  var discountFactor = 0.9;
   var nonGreedyDecayDuration = 10.0;
+  var learningRateDecayDuration = 1000.0;
   // Feature space
   var discreteDistance = 50.0;
   // State space
@@ -18,6 +21,9 @@ window.Q = (function () {
 
   /* Runtime properties */
   // Q table
+  // Parameters
+  var nonGreedyProb = initNonGreedyProb;
+  var learningRate = initLearningRate;
   var qTable = {};
   // Training variables
   var isTraining = true;
@@ -55,7 +61,7 @@ window.Q = (function () {
     if (hasCollision) {
       return 0.0;
     } else {
-      return (lastScore !== score ? 1.0 : 0.0);
+      return (lastScore !== score ? 1.0 : 1e-3);
     }
   };
 
@@ -67,7 +73,7 @@ window.Q = (function () {
       stateQValueSet = qTable[state];
       for (var actionInd = 0; actionInd < actionSpace.length; actionInd += 1) {
         var action = actionSpace[actionInd];
-        stateQValueSet[action] = 1e-3 * _.random(0.0, 1.0, true);
+        stateQValueSet[action] = 1.0;
       }
     }
     return stateQValueSet[action];
@@ -87,8 +93,7 @@ window.Q = (function () {
       });
       return actionSpace[maxIndex];
     } else {
-      var randIndex = _.random(actionSpace.length - 1);
-      return actionSpace[randIndex];
+      return false;
     }
   };
 
@@ -117,7 +122,12 @@ window.Q = (function () {
   };
 
   var _decay = function () {
-    nonGreedyProb = 1 / ((episodeIndex + 1) / nonGreedyDecayDuration);
+    nonGreedyProb = initNonGreedyProb /
+      ((episodeIndex + 1) / nonGreedyDecayDuration);
+    nonGreedyProb = _.clamp(nonGreedyProb, minNonGreedyProb, initNonGreedyProb);
+    learningRate = initLearningRate /
+      ((episodeIndex + 1) / learningRateDecayDuration);
+    learningRate = _.clamp(learningRate, minLearningRate, initLearningRate);
   };
 
   var _printEpisodeInfo = function () {
@@ -161,7 +171,6 @@ window.Q = (function () {
         console.log('The problem is solved in episode ' + (episodeIndex + 1));
         isTraining = false;
         nonGreedyProb = 0.0;
-        learningRate = 0.0;
       }
     }
     // Because it has only one function, we learn from the last action
