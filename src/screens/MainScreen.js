@@ -119,8 +119,10 @@
 
       this.moveLand();
 
-      var dx = 10000,
-        dy = 10000;
+      var dx = 10000;
+      var dy = 10000;
+      var dx2 = null;
+      var dy2 = null;
 
       var hasCollision = false;
       for (var i = 0; i < this.pipes.length; i++) {
@@ -137,6 +139,16 @@
             if (b.x + b.w - a.x < dx) {
               dx = b.x + b.w - a.x;
               dy = b.y - a.y;
+              // Get the next pipe distance
+              var nextPipeIndex = i + 1;
+              if (nextPipeIndex < this.pipes.length) {
+                var nextPipe = this.pipes[nextPipeIndex];
+                dx2 = nextPipe.x + nextPipe.w - a.x;
+                dy2 = nextPipe.y - a.y;
+              } else {
+                dx2 = 0.0;
+                dy2 = 0.0;
+              }
             }
           }
         }
@@ -153,7 +165,7 @@
           hasCollision = true;
         }
       }
-      // console.log('(' + dx + ', ' + dy + ')');
+      // console.log('(' + dx + ', ' + dy + ',' + dx2 + ',' + dy2 + ')');
       if (this.bird.y > Ω.env.h - 112 - this.bird.h) {
         hasCollision = true;
       }
@@ -172,7 +184,14 @@
         }
       }
       if (!this.lastHasCollision) {
-        if (Q(dx, dy, hasCollision, this.score)) {
+        // Call the training function
+        var action = null;
+        if (window.QMulti) {
+          action = window.QMulti(dx, dy, dx2, dy2, hasCollision, this.score);
+        } else if (Q) {
+          action = window.Q(dx, dy, hasCollision, this.score);
+        }
+        if (action) {
           this.bird.ac = -7;
         }
       }
