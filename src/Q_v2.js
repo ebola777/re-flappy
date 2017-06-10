@@ -73,7 +73,9 @@ Q = (function() {
     // Input: dx, dy, if there is a collision
     // Output: jump or not
     cnt++;
-    epsilon = 0.01/(cnt/100000);
+    if(cnt>10000){
+        epsilon = 0.01/(cnt/100000);
+    }
     
     state_x_pre = state_x;
     state_y_pre = state_y;
