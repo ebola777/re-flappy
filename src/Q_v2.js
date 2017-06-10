@@ -10,7 +10,7 @@ function choose_action(epsilon, state_x, state_y, q_table){
     }
   }
   
-  if(Math.random()>=epsilon || flag_zeros==1){
+  if(Math.random()<=epsilon || flag_zeros==1){
     return 0; //Math.floor((Math.random() * 2))
   }
   else{
@@ -54,11 +54,12 @@ Q = (function() {
   }
   
   // Define variables
-  var epsilon = 0.99;
+  var epsilon = 0.01;
   var alpha = 0.1;
   var gamma = 0.9;
   var reward = 0;
   var flag_ini = 1;
+  var cnt = 0;
   
   var state_x = 0;
   var state_y = 0;
@@ -71,6 +72,9 @@ Q = (function() {
     // Write the Q learning algorithm here.
     // Input: dx, dy, if there is a collision
     // Output: jump or not
+    cnt++;
+    epsilon = 0.01/(cnt/100000);
+    
     state_x_pre = state_x;
     state_y_pre = state_y;
     action_pre = action;
