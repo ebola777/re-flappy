@@ -32,7 +32,7 @@ Q = (function() {
   var something;
   
   // Define a 3-D q_table
-  var d1 = 6;
+  var d1 = 52;
   var d2 = 12;
   var d3 = 2;
   
@@ -81,10 +81,10 @@ Q = (function() {
     state_y_pre = state_y;
     action_pre = action;
     
-    state_x = Math.floor(dx/100);
-    state_y = Math.floor(dy/11);
-    if(state_x>5){
-      state_x = 5;
+    state_x = Math.floor(dx/11);
+    state_y = Math.floor((dy/11));
+    if(state_x>51){
+      state_x = 51;
     }
     if(state_y<0){
       state_y = 0;
